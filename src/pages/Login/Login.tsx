@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../app/hooks";
-import { authApi } from "../../features/auth/authApi";
+import { useLoginMutation } from "../../features/auth/authApi";
 import { storage } from "../../services/storage";
 import { login } from "../../features/auth/authSlice";
 import { useForm } from "react-hook-form";
@@ -14,7 +14,7 @@ import Input from "../../components/Input/Input";
 function Login() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
+  const [loginApi] = useLoginMutation();
   const {
     register,
     handleSubmit,
@@ -25,14 +25,14 @@ function Login() {
 
   const oneSubmit = async (values: LoginFormData) => {
     try {
-      const data = await authApi.login(values.email, values.password);
-      storage.setAccessToken(data.access_token);
-      storage.setRefreshToken(data.refresh_token);
+      const response = await loginApi(values).unwrap();
+      storage.setAccessToken(response.data.access_token);
+      storage.setRefreshToken(response.data.refresh_token);
 
       dispatch(
         login({
-          id: data.user.id,
-          email: data.user.email,
+          id: response.data.user.id,
+          email: response.data.user.email,
         }),
       );
 

@@ -1,21 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../app/hooks";
-import React, { useState } from "react";
 import { authApi } from "../../features/auth/authApi";
 import { storage } from "../../services/storage";
 import { login } from "../../features/auth/authSlice";
+import { useForm } from "react-hook-form";
+import {
+  loginSchema,
+  type LoginFormData,
+} from "../../features/auth/loginSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Input from "../../components/Input/Input";
 
 function Login() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  const oneSubmit = async (values: LoginFormData) => {
     try {
-      const data = await authApi.login(email, password);
+      const data = await authApi.login(values.email, values.password);
       storage.setAccessToken(data.access_token);
       storage.setRefreshToken(data.refresh_token);
 
@@ -34,22 +44,21 @@ function Login() {
 
   return (
     <div className="container mt-5">
-      <form onSubmit={handleSubmit}>
-        <input
-          className="form-control mb-3"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+      <form onSubmit={handleSubmit(oneSubmit)}>
+        <Input
+          label="Email"
+          registration={register("email")}
+          error={errors.email}
         />
-        <input
-          className="form-control mb-3"
+        <Input
+          label="Password"
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
+          registration={register("password")}
+          error={errors.password}
         />
-        <button className="btn btn-primary">Login</button>
+        <button className="btn btn-primary w-100" disabled={isSubmitting}>
+          {isSubmitting ? "Loading" : "Login"}
+        </button>
       </form>
     </div>
   );

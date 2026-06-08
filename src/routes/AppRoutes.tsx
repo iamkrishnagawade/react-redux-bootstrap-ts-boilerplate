@@ -5,6 +5,7 @@ import { PATHS } from "./paths";
 import Login from "../pages/Login/Login";
 import ProtectedRoute from "./ProtectedRoute";
 import Dashboard from "../pages/Dashboard/Dashboard";
+import AppLayout from "../layouts/AppLayout/AppLayout";
 
 function AppRoutes() {
   return (
@@ -14,13 +15,14 @@ function AppRoutes() {
         <Route path={PATHS.NOT_FOUND} element={<NotFound />} />
         <Route path={PATHS.LOGIN} element={<Login />} />
         <Route
-          path={PATHS.DASHBOARD}
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path={PATHS.DASHBOARD} element={<Dashboard />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
